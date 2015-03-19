@@ -105,7 +105,7 @@ def get_movie_info(movie_id):
     rating = movie.get('rating')
 
     if not rating:
-        rating = '0.0'
+        rating = 0.0
 
     return rating
 
