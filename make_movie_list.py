@@ -139,39 +139,58 @@ def get_imdb_id(movie):
     return movie_id
 
 
+def movies_in_path(path):
+    movie_set = set()
+
+    #scan the path for movies
+    for (path, dirs, files) in os.walk(path):
+        for f in files:
+            if is_movie(f) == True:
+                f = get_movie_name(f)
+                #print f
+                movie_set.add(f)
+
+    movie_list = list(movie_set)
+    movie_list.sort()
+    return movie_list
+
+def movies_in_file(filepath):
+    movie_set = set()
+
+    for m in open(filepath, 'r'):
+        movie_set.add(m.strip())
+
+    movie_list = list(movie_set)
+    movie_list.sort()
+    return movie_list
+
+def put_to_temp(movie_list, temp_file_name):
+    file_out = open(temp_file_name, "w")
+    file_out.write('\n'.join(movie_list))
+    file_out.close()
+
 
 ###### START #######
 
-if len(sys.argv) != 2:  # the program name and the path to search
-    sys.exit("Usage: " + sys.argv[0] + " <path>")
 
-path = sys.argv[1]
-movie_set = set()
+if len(sys.argv) != 3 or (sys.argv[1] != "--file" and sys.argv[1] != "--path"):
+    sys.exit("Usage: " + sys.argv[0] + " --path <path>\n    or " + sys.argv[0] + " --file <file>")
 
+argument = sys.argv[2]
+temp_file_name = 'movies.temp'
 
-#scan the path for movies
-for (path, dirs, files) in os.walk(path):
-    for f in files:
-        if is_movie(f) == True:
-            f = get_movie_name(f)
-            #print f
-            movie_set.add(f)
+if sys.argv[1] == "--path":
+    put_to_temp(movies_in_path(argument), temp_file_name)
 
+if sys.argv[1] == "--file":
+    put_to_temp(movies_in_file(argument), temp_file_name)
 
-movie_list = list(movie_set)
-movie_list.sort()
-
-#put this movie list into a temp file
-file_name = 'movies.temp'
-file_out = open(file_name, "w")
-file_out.write('\n'.join(movie_list))
-file_out.close()
 
 #give a chance to user, to edit/correct/cleanup the movie names
-call(["vim", file_name])
+call(["vim", temp_file_name])
 
 #now go back to work
-file_in = open(file_name)
+file_in = open(temp_file_name)
 file_content = ""
 
 while 1:
